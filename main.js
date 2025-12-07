@@ -297,7 +297,7 @@ favoritesToggleBtn.addEventListener("click", function() {
   applyFilterAndRender();
 });
 
-commentForm.addEventListener("submit", async function(e) {
+commentForm.addEventListener("submit", async function (e) {
   e.preventDefault();
   if (!currentHymnId) return;
 
@@ -309,11 +309,17 @@ commentForm.addEventListener("submit", async function(e) {
   submitBtn.disabled = true;
 
   try {
-    await addComment(currentHymnId, name, text);
-    commentTextInput.value = "";
-    await loadAndRenderComments();
+    const result = await addComment(currentHymnId, name, text);
+
+    if (result && result.error) {
+      alert("Error from server: " + result.error);
+    } else {
+      commentTextInput.value = "";
+      await loadAndRenderComments();
+    }
   } catch (err) {
-    alert("Error adding comment. Please try again.");
+    console.error(err);
+    alert("Error adding comment. Check console for details.");
   } finally {
     submitBtn.disabled = false;
   }
