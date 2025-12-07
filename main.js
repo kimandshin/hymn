@@ -3,7 +3,7 @@
  *********************************************/
 
 // 1) Put your Apps Script Web App URL here:
-const API_BASE = "https://script.google.com/macros/s/PASTE_YOUR_WEB_APP_ID_HERE/exec";
+const API_BASE = "https://script.google.com/macros/s/AKfycbyCzINmhpPt5TXrl55e2h0Vjv82_Jco8ajLY90izdBEyyF2SPdzeZB1oKaMc8Nj5x51/exec";
 
 // 2) If GithubPath holds FULL URLs, leave IMAGE_BASE = "".
 //    If GithubPath is just "/hymns/xxx.png", set IMAGE_BASE to your site root.
