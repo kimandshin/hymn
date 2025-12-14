@@ -20,7 +20,7 @@
       flex-direction: column;
       background: #f7f7f7;
       color: #222;
-      overflow: hidden; /* <-- only inner panes scroll */
+      overflow: hidden; /* only inner panes scroll */
     }
 
     header {
@@ -61,24 +61,71 @@
     .layout {
       flex: 1 1 auto;
       display: flex;
-      min-height: 0; /* important for flex scrolling */
+      min-height: 0;
+    }
+
+    .sidebar-wrapper {
+      position: relative;
+      flex: 0 0 auto;
     }
 
     aside {
-      width: 280px;
-      max-width: 100%;
+      width: 260px;
+      min-width: 160px;
+      max-width: 420px;
+      height: 100%;
       border-right: 1px solid #ddd;
       background: #fafafa;
-      overflow-y: auto; /* only the list scrolls */
+      overflow-y: auto;
+      overflow-x: hidden;
+      resize: horizontal; /* user can drag to resize */
+      box-sizing: border-box;
     }
+
+    body.sidebar-collapsed aside {
+      width: 28px;
+      min-width: 28px;
+      max-width: 28px;
+      overflow: hidden;
+    }
+
     @media (max-width: 800px) {
       .layout {
         flex-direction: column;
       }
-      aside {
+      .sidebar-wrapper, aside {
         width: 100%;
-        max-height: 40vh;
+        max-width: 100%;
+        height: auto;
+        resize: none;
       }
+      body.sidebar-collapsed aside {
+        width: 100%;
+      }
+    }
+
+    #collapseSidebarBtn {
+      position: absolute;
+      top: 50%;
+      right: -6px;
+      transform: translate(50%, -50%);
+      width: 16px;
+      height: 40px;
+      font-size: 0.75rem;
+      padding: 0;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      background: #fff;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+    }
+
+    body.sidebar-collapsed #collapseSidebarBtn {
+      right: -6px;
+      transform: translate(50%, -50%) rotate(180deg);
     }
 
     #hymnList {
@@ -93,6 +140,9 @@
       font-size: 0.9rem;
       display: flex;
       flex-direction: column;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
     }
     #hymnList li span.title {
       font-weight: 600;
@@ -112,7 +162,7 @@
       flex-direction: column;
       padding: 0.5rem;
       min-width: 0;
-      overflow: hidden; /* inner pieces manage their own scroll */
+      overflow: hidden;
     }
 
     #viewerHeader {
@@ -148,19 +198,19 @@
       flex: 1 1 auto;
       display: flex;
       justify-content: center;
-      align-items: flex-start; /* image sticks to top */
+      align-items: flex-start;
       background: #222;
       border-radius: 4px;
       overflow: hidden;
       min-height: 0;
-      touch-action: pan-y; /* allow horizontal swipe detection */
+      touch-action: pan-y;
     }
     .hymn-container-inner {
       width: 100%;
       height: 100%;
       display: flex;
       justify-content: center;
-      align-items: flex-start; /* top */
+      align-items: flex-start;
     }
     #hymnImage {
       max-height: 100%;
@@ -231,9 +281,12 @@
   </header>
 
   <div class="layout">
-    <aside>
-      <ul id="hymnList"></ul>
-    </aside>
+    <div class="sidebar-wrapper">
+      <aside>
+        <ul id="hymnList"></ul>
+      </aside>
+      <button id="collapseSidebarBtn">◀</button>
+    </div>
 
     <main>
       <div id="viewerHeader">
