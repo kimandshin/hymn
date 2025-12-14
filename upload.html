@@ -78,10 +78,19 @@
 <body>
   <h1>Upload a new hymn</h1>
   <p class="note">
-    PNG files will be stored in your Google Drive folder <strong>HymnUploads</strong> and auto-added to the hymn list.
+    Image files will be stored in your Google Drive folder <strong>HymnUploads</strong> and auto-added to the hymn list.
   </p>
 
-  <form id="uploadForm" method="post" enctype="multipart/form-data">
+  <!-- IMPORTANT: action points directly to the Apps Script Web App -->
+  <form
+    id="uploadForm"
+    method="post"
+    action="https://script.google.com/macros/s/AKfycbyCzINmhpPt5TXrl55e2h0Vjv82_Jco8ajLY90izdBEyyF2SPdzeZB1oKaMc8Nj5x51/exec"
+    enctype="multipart/form-data"
+  >
+    <!-- tell Apps Script which action to run -->
+    <input type="hidden" name="action" value="uploadHymn" />
+
     <label>
       Hymn number (optional)
       <input type="number" name="number" />
@@ -128,44 +137,15 @@
     </label>
 
     <button type="submit" class="btn">Upload hymn</button>
-    <button type="button" class="btn btn-secondary" onclick="window.location.href='index.html'">Back to browser</button>
+    <button type="button" class="btn btn-secondary" onclick="window.location.href='index.html'">
+      Back to browser
+    </button>
   </form>
 
   <div class="links">
     <a href="index.html">← Back to Hymn Browser</a>
   </div>
 
-  <script>
-    // Your Apps Script web app URL:
-    const API_BASE = "https://script.google.com/macros/s/AKfycbyCzINmhpPt5TXrl55e2h0Vjv82_Jco8ajLY90izdBEyyF2SPdzeZB1oKaMc8Nj5x51/exec";
-
-    const form = document.getElementById("uploadForm");
-
-    form.addEventListener("submit", async function (e) {
-      e.preventDefault();
-
-      const formData = new FormData(form);
-      formData.append("action", "uploadHymn");
-
-      try {
-        const res = await fetch(API_BASE, {
-          method: "POST",
-          body: formData
-        });
-        const data = await res.json();
-
-        if (data && data.success) {
-          alert("Hymn uploaded! HymnID: " + data.hymn.HymnID);
-          // Clear form
-          form.reset();
-        } else {
-          alert("Upload failed: " + (data && data.error ? data.error : "Unknown error"));
-        }
-      } catch (err) {
-        console.error(err);
-        alert("Error uploading hymn. Check console for details.");
-      }
-    });
-  </script>
+  <!-- NO JavaScript needed for upload; browser posts directly to Apps Script -->
 </body>
 </html>
