@@ -81,14 +81,14 @@
     Image files will be stored in your Google Drive folder <strong>HymnUploads</strong> and auto-added to the hymn list.
   </p>
 
-  <!-- IMPORTANT: action points directly to the Apps Script Web App -->
+  <!-- IMPORTANT: direct post to Apps Script web app -->
   <form
     id="uploadForm"
     method="post"
     action="https://script.google.com/macros/s/AKfycbyCzINmhpPt5TXrl55e2h0Vjv82_Jco8ajLY90izdBEyyF2SPdzeZB1oKaMc8Nj5x51/exec"
     enctype="multipart/form-data"
   >
-    <!-- tell Apps Script which action to run -->
+    <!-- tell Apps Script which handler to use -->
     <input type="hidden" name="action" value="uploadHymn" />
 
     <label>
@@ -146,6 +146,6 @@
     <a href="index.html">← Back to Hymn Browser</a>
   </div>
 
-  <!-- NO JavaScript needed for upload; browser posts directly to Apps Script -->
+  <!-- NOTE: no <script> block at all -->
 </body>
 </html>
