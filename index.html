@@ -8,12 +8,23 @@
     :root {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
-    body {
+
+    html, body {
+      height: 100%;
       margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
       background: #f7f7f7;
       color: #222;
+      overflow: hidden; /* <-- only inner panes scroll */
     }
+
     header {
+      flex: 0 0 auto;
       padding: 0.75rem 1rem;
       background: #ffffff;
       border-bottom: 1px solid #ddd;
@@ -48,13 +59,9 @@
     }
 
     .layout {
+      flex: 1 1 auto;
       display: flex;
-      min-height: calc(100vh - 52px);
-    }
-    @media (max-width: 800px) {
-      .layout {
-        flex-direction: column;
-      }
+      min-height: 0; /* important for flex scrolling */
     }
 
     aside {
@@ -62,9 +69,12 @@
       max-width: 100%;
       border-right: 1px solid #ddd;
       background: #fafafa;
-      overflow-y: auto;
+      overflow-y: auto; /* only the list scrolls */
     }
     @media (max-width: 800px) {
+      .layout {
+        flex-direction: column;
+      }
       aside {
         width: 100%;
         max-height: 40vh;
@@ -97,14 +107,16 @@
     }
 
     main {
-      flex: 1;
-      position: relative;
+      flex: 1 1 auto;
       display: flex;
       flex-direction: column;
       padding: 0.5rem;
+      min-width: 0;
+      overflow: hidden; /* inner pieces manage their own scroll */
     }
 
     #viewerHeader {
+      flex: 0 0 auto;
       display: flex;
       align-items: baseline;
       flex-wrap: wrap;
@@ -121,6 +133,7 @@
     }
 
     .viewer-controls {
+      flex: 0 0 auto;
       margin-bottom: 0.4rem;
       display: flex;
       flex-wrap: wrap;
@@ -132,37 +145,39 @@
     }
 
     .hymn-container-outer {
-      flex: 1;
+      flex: 1 1 auto;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start; /* image sticks to top */
       background: #222;
       border-radius: 4px;
       overflow: hidden;
-      min-height: 40vh;
+      min-height: 0;
+      touch-action: pan-y; /* allow horizontal swipe detection */
     }
     .hymn-container-inner {
-      max-height: 95vh;
-      max-width: 100%;
+      width: 100%;
+      height: 100%;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start; /* top */
     }
     #hymnImage {
-      max-height: 95vh;
+      max-height: 100%;
+      max-width: 100%;
       width: auto;
-      transform-origin: center center;
+      transform-origin: top center;
       transition: transform 0.15s ease-out;
       background: #fff;
     }
 
     #commentsSection {
+      flex: 0 0 180px;
       margin-top: 0.5rem;
       background: #fff;
       border-radius: 4px;
       padding: 0.5rem;
       border: 1px solid #eee;
-      max-height: 35vh;
       overflow-y: auto;
     }
     #commentsSection h3 {
@@ -227,13 +242,15 @@
       </div>
 
       <div class="viewer-controls">
+        <button id="prevBtn" class="btn">◀ Previous</button>
+        <button id="nextBtn" class="btn">Next ▶</button>
         <button id="zoomOutBtn" class="btn">-</button>
         <button id="zoomInBtn" class="btn">+</button>
         <a id="downloadLink" class="btn" href="#" download>Download PNG</a>
         <button id="favoriteBtn" class="btn">☆ Add to favorites</button>
       </div>
 
-      <div class="hymn-container-outer">
+      <div id="viewerSwipeArea" class="hymn-container-outer">
         <div class="hymn-container-inner">
           <img id="hymnImage" alt="Hymn will appear here" />
         </div>
