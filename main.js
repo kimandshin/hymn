@@ -5,8 +5,7 @@
 // 1) Put your Apps Script Web App URL here:
 const API_BASE = "https://script.google.com/macros/s/AKfycbyCzINmhpPt5TXrl55e2h0Vjv82_Jco8ajLY90izdBEyyF2SPdzeZB1oKaMc8Nj5x51/exec";
 
-// 2) If GithubPath holds FULL URLs, leave IMAGE_BASE = "".
-//    If GithubPath is just "image/xxx.png", set IMAGE_BASE = "" (your case).
+// If GithubPath is relative like "image/604.png", leave IMAGE_BASE = "".
 const IMAGE_BASE = "";
 
 // State
@@ -34,6 +33,7 @@ const commentTextInput = document.getElementById("commentText");
 const prevBtn = document.getElementById("prevBtn");
 const nextBtn = document.getElementById("nextBtn");
 const swipeArea = document.getElementById("viewerSwipeArea");
+const collapseSidebarBtn = document.getElementById("collapseSidebarBtn");
 
 /*********** Favorites helpers ***********/
 function getFavorites() {
@@ -190,6 +190,8 @@ function clearViewer() {
 }
 
 function showHymn(hymn) {
+  if (!hymn) return;
+
   currentHymnId = hymn.HymnID;
   zoomLevel = 1;
   hymnImageEl.style.transform = "scale(" + zoomLevel + ")";
@@ -281,6 +283,7 @@ function showNext(delta) {
   let idx = getCurrentIndex();
   if (idx === -1) idx = 0;
   else idx = (idx + delta + filtered.length) % filtered.length;
+  console.log("showNext", { delta, idx, hymnId: filtered[idx].HymnID });
   showHymn(filtered[idx]);
 }
 
@@ -315,13 +318,16 @@ favoritesToggleBtn.addEventListener("click", function () {
   applyFilterAndRender();
 });
 
-prevBtn.addEventListener("click", function () {
-  showNext(-1);
-});
-
-nextBtn.addEventListener("click", function () {
-  showNext(1);
-});
+if (prevBtn) {
+  prevBtn.addEventListener("click", function () {
+    showNext(-1);
+  });
+}
+if (nextBtn) {
+  nextBtn.addEventListener("click", function () {
+    showNext(1);
+  });
+}
 
 commentForm.addEventListener("submit", async function (e) {
   e.preventDefault();
@@ -378,11 +384,18 @@ if (swipeArea) {
 
     if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
       if (dx < 0) showNext(1);   // swipe left -> next
-      else showNext(-1);         // swipe right -> previous
+      else showNext(-1);         // swipe right -> prev
     }
 
     touchStartX = null;
     touchStartY = null;
+  });
+}
+
+/*********** Sidebar collapse ***********/
+if (collapseSidebarBtn) {
+  collapseSidebarBtn.addEventListener("click", function () {
+    document.body.classList.toggle("sidebar-collapsed");
   });
 }
 
