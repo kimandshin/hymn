@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Upload Hymn</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    body {
+      margin: 0;
+      padding: 1rem;
+      background: #f7f7f7;
+      color: #222;
+    }
+    h1 {
+      font-size: 1.3rem;
+      margin-top: 0;
+    }
+    form {
+      max-width: 480px;
+      background: #fff;
+      padding: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ddd;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    label {
+      display: block;
+      margin-top: 0.6rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+    input[type="text"],
+    input[type="number"],
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 0.4rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      font-size: 0.9rem;
+    }
+    textarea {
+      min-height: 60px;
+      resize: vertical;
+    }
+    input[type="file"] {
+      margin-top: 0.3rem;
+      font-size: 0.9rem;
+    }
+    .btn {
+      margin-top: 1rem;
+      padding: 0.45rem 0.9rem;
+      border-radius: 4px;
+      border: 1px solid #333;
+      background: #333;
+      color: #fff;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+    .btn-secondary {
+      background: #fff;
+      color: #333;
+      margin-right: 0.5rem;
+    }
+    .note {
+      font-size: 0.8rem;
+      color: #666;
+    }
+    .links {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>Upload a new hymn</h1>
+  <p class="note">
+    PNG files will be stored in your Google Drive folder <strong>HymnUploads</strong> and auto-added to the hymn list.
+  </p>
+
+  <form id="uploadForm" method="post" enctype="multipart/form-data">
+    <label>
+      Hymn number (optional)
+      <input type="number" name="number" />
+    </label>
+
+    <label>
+      Title (Korean)
+      <input type="text" name="titleKo" />
+    </label>
+
+    <label>
+      Title (English)
+      <input type="text" name="titleEn" />
+    </label>
+
+    <label>
+      Key (e.g. C, D, E♭)
+      <input type="text" name="key" />
+    </label>
+
+    <label>
+      Tags (comma separated)
+      <input type="text" name="tags" placeholder="wedding,jesus,love" />
+    </label>
+
+    <label>
+      Themes
+      <input type="text" name="themes" placeholder="wedding,God's love" />
+    </label>
+
+    <label>
+      Keywords (for search)
+      <input type="text" name="keywords" placeholder="사랑, 결혼, 웨딩" />
+    </label>
+
+    <label>
+      Description (optional)
+      <textarea name="description"></textarea>
+    </label>
+
+    <label>
+      Hymn PNG file
+      <input type="file" name="hymnFile" accept=".png,image/png" required />
+    </label>
+
+    <button type="submit" class="btn">Upload hymn</button>
+    <button type="button" class="btn btn-secondary" onclick="window.location.href='index.html'">Back to browser</button>
+  </form>
+
+  <div class="links">
+    <a href="index.html">← Back to Hymn Browser</a>
+  </div>
+
+  <script>
+    // Your Apps Script web app URL:
+    const API_BASE = "https://script.google.com/macros/s/AKfycbyCzINmhpPt5TXrl55e2h0Vjv82_Jco8ajLY90izdBEyyF2SPdzeZB1oKaMc8Nj5x51/exec";
+
+    const form = document.getElementById("uploadForm");
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      formData.append("action", "uploadHymn");
+
+      try {
+        const res = await fetch(API_BASE, {
+          method: "POST",
+          body: formData
+        });
+        const data = await res.json();
+
+        if (data && data.success) {
+          alert("Hymn uploaded! HymnID: " + data.hymn.HymnID);
+          // Clear form
+          form.reset();
+        } else {
+          alert("Upload failed: " + (data && data.error ? data.error : "Unknown error"));
+        }
+      } catch (err) {
+        console.error(err);
+        alert("Error uploading hymn. Check console for details.");
+      }
+    });
+  </script>
+</body>
+</html>
