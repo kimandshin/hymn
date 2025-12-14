@@ -6,7 +6,7 @@
 const API_BASE = "https://script.google.com/macros/s/AKfycbyCzINmhpPt5TXrl55e2h0Vjv82_Jco8ajLY90izdBEyyF2SPdzeZB1oKaMc8Nj5x51/exec";
 
 // 2) If GithubPath holds FULL URLs, leave IMAGE_BASE = "".
-//    If GithubPath is just "/hymns/xxx.png", set IMAGE_BASE to your site root.
+//    If GithubPath is just "image/xxx.png", set IMAGE_BASE = "" (your case).
 const IMAGE_BASE = "";
 
 // State
@@ -31,6 +31,9 @@ const commentsListEl = document.getElementById("commentsList");
 const commentForm = document.getElementById("commentForm");
 const commentNameInput = document.getElementById("commentName");
 const commentTextInput = document.getElementById("commentText");
+const prevBtn = document.getElementById("prevBtn");
+const nextBtn = document.getElementById("nextBtn");
+const swipeArea = document.getElementById("viewerSwipeArea");
 
 /*********** Favorites helpers ***********/
 function getFavorites() {
@@ -97,7 +100,7 @@ function applyFilterAndRender() {
   const q = (searchInput.value || "").toLowerCase();
   const favs = getFavorites();
 
-  filtered = hymns.filter(function(h) {
+  filtered = hymns.filter(function (h) {
     if (favoritesOnly && !favs.includes(String(h.HymnID))) return false;
     if (!q) return true;
 
@@ -112,7 +115,7 @@ function applyFilterAndRender() {
 
     return fields
       .filter(Boolean)
-      .some(function(str) {
+      .some(function (str) {
         return String(str).toLowerCase().includes(q);
       });
   });
@@ -120,7 +123,7 @@ function applyFilterAndRender() {
   renderHymnList();
 
   if (filtered.length > 0) {
-    const stillVisible = filtered.find(function(h) {
+    const stillVisible = filtered.find(function (h) {
       return String(h.HymnID) === String(currentHymnId);
     });
     if (!stillVisible) {
@@ -136,7 +139,7 @@ function applyFilterAndRender() {
 function renderHymnList() {
   hymnListEl.innerHTML = "";
 
-  filtered.forEach(function(hymn) {
+  filtered.forEach(function (hymn) {
     const li = document.createElement("li");
     li.dataset.id = hymn.HymnID;
 
@@ -157,7 +160,7 @@ function renderHymnList() {
     li.appendChild(titleSpan);
     li.appendChild(metaSpan);
 
-    li.addEventListener("click", function() {
+    li.addEventListener("click", function () {
       showHymn(hymn);
     });
 
@@ -168,7 +171,7 @@ function renderHymnList() {
 }
 
 function highlightCurrentInList() {
-  Array.prototype.forEach.call(hymnListEl.children, function(li) {
+  Array.prototype.forEach.call(hymnListEl.children, function (li) {
     if (String(li.dataset.id) === String(currentHymnId)) {
       li.classList.add("active");
     } else {
@@ -238,7 +241,7 @@ async function loadAndRenderComments() {
       return;
     }
     commentsListEl.innerHTML = "";
-    comments.forEach(function(c) {
+    comments.forEach(function (c) {
       const div = document.createElement("div");
       div.className = "comment";
 
@@ -266,35 +269,58 @@ async function loadAndRenderComments() {
   }
 }
 
+/*********** Navigation helpers (prev/next/swipe) ***********/
+function getCurrentIndex() {
+  return filtered.findIndex(function (h) {
+    return String(h.HymnID) === String(currentHymnId);
+  });
+}
+
+function showNext(delta) {
+  if (!filtered.length) return;
+  let idx = getCurrentIndex();
+  if (idx === -1) idx = 0;
+  else idx = (idx + delta + filtered.length) % filtered.length;
+  showHymn(filtered[idx]);
+}
+
 /*********** Event listeners ***********/
-searchInput.addEventListener("input", function() {
+searchInput.addEventListener("input", function () {
   applyFilterAndRender();
 });
 
-zoomInBtn.addEventListener("click", function() {
+zoomInBtn.addEventListener("click", function () {
   zoomLevel = Math.min(zoomLevel + 0.1, 3);
   hymnImageEl.style.transform = "scale(" + zoomLevel + ")";
 });
 
-zoomOutBtn.addEventListener("click", function() {
+zoomOutBtn.addEventListener("click", function () {
   zoomLevel = Math.max(zoomLevel - 0.1, 0.5);
   hymnImageEl.style.transform = "scale(" + zoomLevel + ")";
 });
 
-favoriteBtn.addEventListener("click", function() {
+favoriteBtn.addEventListener("click", function () {
   if (!currentHymnId) return;
   toggleFavorite(currentHymnId);
   updateFavoriteButton();
   applyFilterAndRender();
 });
 
-favoritesToggleBtn.addEventListener("click", function() {
+favoritesToggleBtn.addEventListener("click", function () {
   favoritesOnly = !favoritesOnly;
   favoritesToggleBtn.classList.toggle("active", favoritesOnly);
   favoritesToggleBtn.textContent = favoritesOnly
     ? "Favorites only: On"
     : "Favorites only: Off";
   applyFilterAndRender();
+});
+
+prevBtn.addEventListener("click", function () {
+  showNext(-1);
+});
+
+nextBtn.addEventListener("click", function () {
+  showNext(1);
 });
 
 commentForm.addEventListener("submit", async function (e) {
@@ -310,7 +336,6 @@ commentForm.addEventListener("submit", async function (e) {
 
   try {
     const result = await addComment(currentHymnId, name, text);
-
     if (result && result.error) {
       alert("Error from server: " + result.error);
     } else {
@@ -325,8 +350,44 @@ commentForm.addEventListener("submit", async function (e) {
   }
 });
 
+/*********** Keyboard navigation ***********/
+window.addEventListener("keydown", function (e) {
+  if (e.key === "ArrowRight") {
+    showNext(1);
+  } else if (e.key === "ArrowLeft") {
+    showNext(-1);
+  }
+});
+
+/*********** Touch swipe navigation ***********/
+let touchStartX = null;
+let touchStartY = null;
+
+if (swipeArea) {
+  swipeArea.addEventListener("touchstart", function (e) {
+    const t = e.touches[0];
+    touchStartX = t.clientX;
+    touchStartY = t.clientY;
+  });
+
+  swipeArea.addEventListener("touchend", function (e) {
+    if (touchStartX === null || touchStartY === null) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - touchStartX;
+    const dy = t.clientY - touchStartY;
+
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy)) {
+      if (dx < 0) showNext(1);   // swipe left -> next
+      else showNext(-1);         // swipe right -> previous
+    }
+
+    touchStartX = null;
+    touchStartY = null;
+  });
+}
+
 /*********** Init ***********/
-fetchHymns().catch(function(err) {
+fetchHymns().catch(function (err) {
   console.error(err);
   hymnListEl.innerHTML = "<li>Error loading hymns.</li>";
 });
